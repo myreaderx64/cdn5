@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+        <title>Installing Openbox on Arch Linux</title>
+		<meta name="viewport" content="width=device-width">
+		<link rel="icon" href="data:;base64,iVBORw0KGgo=">
+
+		<link rel="alternate" type="application/rss+xml" title="Mike Chambers RSS" href="http://feeds.feedburner.com/MikeChambers/" />
+
+		<link href="https://fonts.googleapis.com/css2?family=Source+Code+Pro:ital,wght@0,200;1,200&display=swap" rel="stylesheet"> 
+
+		<link href="https://fonts.googleapis.com/css2?family=Source+Serif+Pro:ital,wght@0,300;0,600;1,300&display=swap" rel="stylesheet"> 
+
+		<link href="https://fonts.googleapis.com/css2?family=Source+Sans+Pro:wght@400;700&display=swap" rel="stylesheet"> 
+
+
+        <!-- syntax highlighting CSS -->
+        <link rel="stylesheet" href="/blog/css/syntax.css">
+
+        <!-- Custom CSS -->
+		<link rel="stylesheet" href="/blog/css/main.css">
+		
+		
+
+    </head>
+    <body>
+		<script>
+			/*to prevent Firefox FOUC, this must be here*/
+			let FF_FOUC_FIX;
+		  </script>
+		<div class="site_left"></div>
+		<div class="site_center">
+			<div class="header">
+				<h1 class="title"><a href="/blog/" class="no-underline">mike chambers</a> | <a href="/blog/about/" class="no-underline">about</a></h1>
+			</div>
+			<h2>Installing Openbox on Arch Linux</h2>
+<p class="meta">Tuesday, November 3, 2020</p>
+
+<div class="post">
+<p>I have been spending some time the past week playing around with <a href="https://www.archlinux.org/">Arch Linux</a>. I really like the approach of a bare bones install and understanding every single thing on your system. However, this can lead to some frustration when you are first starting out (my first install I ended up without a network, any fonts or a kernel!).</p>
+
+<p>Anyways, I think the most workable barebones install of Arch Linux is basically the base Linux install with a <a href="https://wiki.archlinux.org/index.php/window_manager">window manager</a>. This post quickly covers the steps for installing and configuring the <a href="http://openbox.org/wiki/Main_Page">Openbox</a> window manager on a fresh Arch Linux install.</p>
+
+<h2 id="install-openbox">Install Openbox</h2>
+
+<p>In order to get a bare minimum install of Openbox up and running you need to install the <em>xorg-server</em> and <em>xorg-xinit</em> packages.</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>sudo pacman -S xorg-server xorg-xinit
+</code></pre></div></div>
+
+<p>This installs the core Openbox server, as well as the initialization files which we will use below to customize the install.</p>
+
+<h2 id="install-fonts">Install Fonts</h2>
+
+<p>Next, if you didn’t explicitly install fonts when installing Arch Linux, you need to install some now. Otherwise, the context menus in Arch Linux will be blank.</p>
+
+<p>To get started you can install the <em>xorg-fonts-misc</em> package:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>pacman -S xorg-fonts-misc
+</code></pre></div></div>
+
+<p>You can find other fonts to install <a href="https://wiki.archlinux.org/index.php/fonts#Latin_script">here</a>. I suggest you find a good monospace font to install, or else terminal rendering might be messed up.</p>
+
+<h2 id="configure-openbox">Configure Openbox</h2>
+
+<p>Next, we need to create a default <code class="language-plaintext highlighter-rouge">xinitrc</code> script. This is run when you call <code class="language-plaintext highlighter-rouge">startx</code> to launch your window manager, and is used to configure how its run and which window manager is launched:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>cp /etc/X11/xinit/xinitrc ~/.xinitrc
+</code></pre></div></div>
+
+<p>Now, open <code class="language-plaintext highlighter-rouge">~/.xinitrc</code> and go to the end of the file. You can comment out all of the xterm apps being executed (as they may not be installed and may cause errors). Add the following at the very end:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>exec openbox-session
+</code></pre></div></div>
+
+<p>This tells X to launch Openbox when your run <code class="language-plaintext highlighter-rouge">startx</code>.</p>
+
+<p>Save and close the file. At this point you can launch Openbox via:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>startx
+</code></pre></div></div>
+
+<p>and Openbox should launch. By default, you will just get a blank screen. If you right click with your mouse, you will get a default context menu, which you can use to launch other apps as well as end your Openbox session.</p>
+
+<p>Note, the menu has a bunch of entries which you probably don’t have setup or installed. You need to manually customize the menu by editing an XML file.</p>
+
+<p>Run the following commands to setup the configuration for Openbox (you might need to close Openbox to get back to a command prompt):</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>mkdir -p ~/.config/openbox
+cp -a /etc/xdg/openbox/ ~/.config/
+</code></pre></div></div>
+
+<p>This will copy 4 files into the <code class="language-plaintext highlighter-rouge">~/.config/openbox</code> directory</p>
+
+<ul>
+  <li><em>rc.xml</em></li>
+  <li><em>menu.xml</em></li>
+  <li><em>autostart</em></li>
+  <li><em>environment</em></li>
+</ul>
+
+<p><a href="http://openbox.org/wiki/Help:Configuration"><em>rc.xml</em></a> is used for general configuration in Openbox, including customizing window and desktop placement on a per app basis (i.e. always open Firefox full screen on desktop 2).</p>
+
+<p><em>menu.xml</em> is used to setup and customize the context menu in Openbox. It comes pre-populated with items which are pretty easy to customize. I suggest you at least add an entry to launch a Terminal program.</p>
+
+<p>Finally, the autostart file can be used to add apps which you want to have automatically launched when Openbox starts. For example, I automatically launch a couple of terminal windows (using the <a href="https://sw.kovidgoyal.net/kitty/">kitty</a> terminal) when I start Openbox.</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>exec kitty
+exec kitty vim ~/docs/notes.md
+</code></pre></div></div>
+
+<p>At this point, you have the basics to start using windowed apps in Arch Linux. Now you can start to customize things to work how you want (i.e. window and desktop management and switching, hotkeys, etc…), as well as installing other apps such as wallpaper managers, file managers, etc…</p>
+
+<p>One thing that is really helpful is to learn some of the default keyboard shortcuts. You can find a good overview of them <a href="https://defkey.com/openbox-shortcuts">here</a>.</p>
+
+<p><strong>UPDATE (Nov 7, 2020)</strong> : Just a couple of quick follow up notes on this. First, Openbox uses the <code class="language-plaintext highlighter-rouge">XDG_CONFIG_HOME</code> environment variable to find custom config files. Here is how I have mine setup in my <em>.bashrc</em>:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>export XDG_CONFIG_HOME=$HOME/.config/
+</code></pre></div></div>
+
+<p><em>.config</em> contains a folder named <em>openbox</em> that contains all of the config file.</p>
+
+<p>If you run into an issue where your custom config files are not being used, then make sure this is set correctly.</p>
+
+<p>Secondly, I would suggest you also install xdg-utils:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>sudo pacman -S xdg-utils
+</code></pre></div></div>
+
+<p>This is useful for handling URLs within openbox (i.e. I ran into an issue where I couldn’t authenticate in Visual Studio Code because it was trying to launch the browser but couldn’t).</p>
+
+</div>
+<!---
+<div class="comments">
+    <div id="disqus_thread"></div>
+    <script type="text/javascript">
+        /* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
+        var disqus_shortname = 'mikechambers'; // required: replace example with your forum shortname
+
+        /* * * DON'T EDIT BELOW THIS LINE * * */
+        (function() {
+            var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+            dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+            (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+        })();
+    </script>
+    <noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+    <a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+
+</div>
+-->
+
+
+			<div class="footer">
+				<p>Copyright 2020&nbsp;&nbsp;|&nbsp;&nbsp;<a href="mailto:mikechambers@gmail.com" class="email">mike chambers</a>&nbsp;&nbsp;|&nbsp;&nbsp;<a href="http://feeds.feedburner.com/MikeChambers/">rss</a></p>
+			</div>		
+			<div id="social">
+				<a href="http://www.twitter.com/mesh/"><img src="/blog/images/social/twitter.svg" width="50" height="50" alt="twitter" /></a>
+				<a href="https://github.com/mikechambers/"><img src="/blog/images/social/github.svg" width="50" height="50" alt="github" /></a>
+				<a href="https://www.linkedin.com/in/mikechambers2/"><img src="/blog/images/social/linkedin.svg" width="50" height="50" alt="flickr" /></a>
+				<a href="http://www.behance.net/mikechambers"><img src="/blog/images/social/behance.svg" width="50" height="50" alt="behance" /></a>
+			</div>
+		</div>
+		<div class="site_right"></div>
+    </body>
+</html>
